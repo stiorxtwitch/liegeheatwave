@@ -693,13 +693,8 @@ footer .foot-copy {
 <body>
 
 <!-- ===== MUSIC ===== -->
-<!--
-  🎵 POUR AJOUTER LA MUSIQUE :
-  Remplace "VOTRE_ID_YOUTUBE" dans le src ci-dessous par l'ID de la vidéo YouTube.
-  Exemple : si l'URL est https://www.youtube.com/watch?v=abc123, l'ID est abc123
--->
 <iframe id="yt-frame"
-  src="https://www.youtube.com/embed/kMjj4XJWHfY?autoplay=0&loop=1&playlist=kMjj4XJWHfY"
+  src="https://www.youtube.com/embed/kMjj4XJWHfY?autoplay=0&loop=1&playlist=kMjj4XJWHfY&enablejsapi=1"
   allow="autoplay"
   style="display:none">
 </iframe>
@@ -988,26 +983,61 @@ footer .foot-copy {
 <!-- ===== JAVASCRIPT ===== -->
 <script>
 // ──────────────────────────────────────────────
-// 🔧 CONFIGURATION — Remplace par ton Webhook Discord
+// 🔧 CONFIGURATION
 // ──────────────────────────────────────────────
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496907610761330759/vRda1s09EgCsDOCburn4y1az3PlPlHvgkJEaO1yWpQ-OQGHYQOh1GafAJI5_KuCw1Rb7";
-// Exemple: "https://discord.com/api/webhooks/123456789/abcdef..."
 
 // ──────────────────────────────────────────────
-// 🎵 MUSIQUE
+// 🎵 MUSIQUE — Lance à la première interaction
 // ──────────────────────────────────────────────
 let musicPlaying = false;
+let musicStarted = false; // garde en mémoire si la musique a déjà été lancée UNE fois
 const frame = document.getElementById('yt-frame');
 const btn = document.getElementById('music-btn');
 
+function startMusicOnce() {
+  // Si déjà lancée une fois, on ne fait rien ici (évite les re-triggers)
+  if (musicStarted) return;
+  musicStarted = true;
+
+  // Lancer la musique
+  frame.style.display = 'block';
+  frame.src = frame.src.replace('autoplay=0', 'autoplay=1');
+  musicPlaying = true;
+  btn.textContent = '🔇';
+
+  // Supprimer les listeners — plus besoin après la première interaction
+  ['click', 'scroll', 'touchstart', 'keydown'].forEach(evt => {
+    document.removeEventListener(evt, startMusicOnce);
+  });
+}
+
+// Attacher les listeners sur les événements utilisateur courants
+['click', 'scroll', 'touchstart', 'keydown'].forEach(evt => {
+  document.addEventListener(evt, startMusicOnce, { once: false, passive: true });
+});
+
+// Bouton manuel : toggle ON/OFF après que la musique soit lancée
 function toggleMusic() {
+  if (!musicStarted) {
+    // Premier clic = on lance (startMusicOnce sera appelé par le listener click, mais on force ici aussi)
+    startMusicOnce();
+    return;
+  }
+
+  // Déjà lancée — on toggle pause/play en rechargant le src
   musicPlaying = !musicPlaying;
   if (musicPlaying) {
     frame.style.display = 'block';
-    const src = frame.src;
-    frame.src = src.replace('autoplay=0', 'autoplay=1');
+    // Forcer le rechargement avec autoplay
+    const currentSrc = frame.src;
+    frame.src = '';
+    setTimeout(() => {
+      frame.src = currentSrc.replace('autoplay=0', 'autoplay=1');
+    }, 50);
     btn.textContent = '🔇';
   } else {
+    // Couper : on vide le src (stoppe la vidéo/audio)
     frame.style.display = 'none';
     frame.src = frame.src.replace('autoplay=1', 'autoplay=0');
     btn.textContent = '🔊';
@@ -1033,7 +1063,6 @@ function previewPhoto(input) {
 // 📋 SOUMISSION PREVENTE
 // ──────────────────────────────────────────────
 async function submitPrevente() {
-  // Check si déjà soumis
   if (localStorage.getItem('lcw_prevente_sent') === 'true') {
     document.getElementById('alreadyModal').classList.add('active');
     return;
@@ -1044,7 +1073,6 @@ async function submitPrevente() {
   const dob = document.getElementById('f-dob').value;
   const photoFile = document.getElementById('f-photo').files[0];
 
-  // Validation
   if (!prenom || !nom || !dob) {
     showError('Remplis tous les champs obligatoires.');
     return;
@@ -1054,19 +1082,11 @@ async function submitPrevente() {
     return;
   }
 
-  // Vérification âge (optionnel — peut être retiré si pas nécessaire)
-  const dobDate = new Date(dob);
-  const today = new Date();
-  const age = today.getFullYear() - dobDate.getFullYear();
-
-  // UI loading
   setLoading(true);
 
   try {
-    // Construire le FormData pour envoyer la photo + embed Discord
     const formData = new FormData();
 
-    // Message embed Discord
     const embedPayload = {
       embeds: [{
         title: "🔥 Nouvelle Prévente – Liège City Heatwave",
@@ -1091,7 +1111,6 @@ async function submitPrevente() {
     });
 
     if (res.ok || res.status === 204) {
-      // Succès
       localStorage.setItem('lcw_prevente_sent', 'true');
       document.getElementById('form-success').style.display = 'block';
       document.getElementById('form-error').style.display = 'none';
