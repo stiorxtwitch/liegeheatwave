@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liège City Heatwave – Liège City RP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;600;700&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== VARIABLES ===== */
+:root {
+  --black: #050505;
+  --deep: #0a0a0a;
+  --red: #cc1a1a;
+  --orange: #e85d04;
+  --fire: #f48c06;
+  --white: #f0ece4;
+  --grey: #888;
+  --light-grey: #bbb;
+  --border: rgba(255,255,255,0.08);
+  --glow-red: 0 0 30px rgba(204,26,26,0.4);
+  --glow-orange: 0 0 40px rgba(232,93,4,0.3);
+}
+
+/* ===== RESET ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ===== NOISE OVERLAY ===== */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.35;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+
+/* ===== MUSIC PLAYER ===== */
+#music-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 999;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--red);
+  border: 2px solid rgba(255,255,255,0.2);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--glow-red), 0 4px 20px rgba(0,0,0,0.6);
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: pulse-btn 2s infinite;
+}
+#music-btn:hover { transform: scale(1.1); box-shadow: 0 0 50px rgba(204,26,26,0.7), 0 4px 20px rgba(0,0,0,0.6); }
+@keyframes pulse-btn {
+  0%,100% { box-shadow: var(--glow-red), 0 4px 20px rgba(0,0,0,0.6); }
+  50% { box-shadow: 0 0 50px rgba(204,26,26,0.6), 0 4px 20px rgba(0,0,0,0.6); }
+}
+#yt-frame { display: none; }
+
+/* ===== NAVBAR ===== */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+  background: linear-gradient(180deg, rgba(5,5,5,0.98) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border);
+}
+nav .logo-nav {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 3px;
+  color: var(--white);
+  text-decoration: none;
+}
+nav .logo-nav span { color: var(--red); }
+nav ul { list-style: none; display: flex; gap: 32px; }
+nav ul a {
+  text-decoration: none;
+  color: var(--grey);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 400;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+nav ul a:hover { color: var(--white); }
+.nav-cta {
+  background: var(--red);
+  color: white !important;
+  padding: 8px 20px;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  transition: background 0.2s !important;
+}
+.nav-cta:hover { background: var(--orange) !important; color: white !important; }
+
+/* ===== HERO ===== */
+#hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  padding: 120px 24px 80px;
+}
+
+/* Fire particles canvas */
+#fire-canvas {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+.hero-bg-lines {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(255,255,255,0.015) 80px),
+    repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(255,255,255,0.015) 80px);
+}
+
+.hero-badge {
+  display: inline-block;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--fire);
+  border: 1px solid rgba(244,140,6,0.4);
+  padding: 6px 18px;
+  margin-bottom: 28px;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  animation: fadeDown 0.8s ease both;
+}
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(5rem, 14vw, 11rem);
+  line-height: 0.88;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  position: relative;
+  animation: fadeDown 0.9s ease 0.1s both;
+}
+.hero-title .line1 { display: block; color: var(--white); }
+.hero-title .line2 { display: block; color: var(--white); }
+.hero-title .heat {
+  display: block;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--red);
+  filter: drop-shadow(0 0 20px rgba(204,26,26,0.5));
+}
+
+.hero-sub {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  color: var(--light-grey);
+  margin: 24px 0 40px;
+  animation: fadeDown 1s ease 0.2s both;
+}
+
+.hero-divider {
+  width: 100%;
+  max-width: 500px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--red), var(--orange), var(--red), transparent);
+  margin: 0 auto 40px;
+  animation: fadeDown 1s ease 0.3s both;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+  animation: fadeDown 1s ease 0.4s both;
+}
+.hero-meta-item { text-align: center; }
+.hero-meta-item .label {
+  font-size: 0.65rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red);
+  display: block;
+  margin-bottom: 4px;
+}
+.hero-meta-item .value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.hero-cta {
+  display: inline-block;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: white;
+  background: linear-gradient(135deg, var(--red), var(--orange));
+  padding: 16px 48px;
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  box-shadow: var(--glow-red);
+  transition: box-shadow 0.3s, transform 0.2s;
+  animation: fadeDown 1s ease 0.5s both;
+  cursor: pointer;
+  border: none;
+}
+.hero-cta:hover { box-shadow: var(--glow-orange); transform: translateY(-2px); }
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SECTION COMMON ===== */
+section { padding: 100px 48px; position: relative; }
+.section-label {
+  font-size: 0.65rem;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 12px;
+  display: block;
+}
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 48px;
+}
+.section-title span { color: transparent; -webkit-text-stroke: 1px var(--red); }
+.container { max-width: 1100px; margin: 0 auto; }
+
+/* ===== SEPARATOR ===== */
+.sep {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+}
+.sep-fire {
+  background: linear-gradient(90deg, transparent, var(--red), var(--orange), var(--red), transparent);
+  height: 2px;
+}
+
+/* ===== LINEUP ===== */
+#lineup { background: var(--deep); }
+.lineup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2px;
+}
+.artist-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  padding: 40px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s, border-color 0.3s;
+}
+.artist-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--red), var(--orange));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s;
+}
+.artist-card:hover { background: rgba(204,26,26,0.05); border-color: rgba(204,26,26,0.3); }
+.artist-card:hover::before { transform: scaleX(1); }
+.artist-card .tag {
+  font-size: 0.6rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--orange);
+  display: block;
+  margin-bottom: 12px;
+}
+.artist-card h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.artist-card p { font-size: 0.9rem; color: var(--grey); line-height: 1.5; }
+.artist-num {
+  position: absolute;
+  top: 20px; right: 24px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 4rem;
+  color: rgba(255,255,255,0.04);
+  line-height: 1;
+}
+
+/* ===== PROGRAMME ===== */
+#programme { background: var(--black); }
+.programme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+.prog-item {
+  border: 1px solid var(--border);
+  padding: 28px 24px;
+  position: relative;
+  transition: border-color 0.3s;
+}
+.prog-item:hover { border-color: rgba(204,26,26,0.4); }
+.prog-icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 16px;
+}
+.prog-item h4 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.prog-item p { font-size: 0.85rem; color: var(--grey); line-height: 1.6; }
+.prog-detail {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--orange);
+  display: block;
+  margin-top: 12px;
+}
+
+/* ===== SECURITE ===== */
+.security-strip {
+  background: rgba(204,26,26,0.07);
+  border-top: 1px solid rgba(204,26,26,0.2);
+  border-bottom: 1px solid rgba(204,26,26,0.2);
+  padding: 24px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  text-align: center;
+}
+.security-strip .sec-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.security-strip .sec-icon { font-size: 1.6rem; }
+.security-strip .sec-label {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white);
+}
+.security-strip .sec-sub { font-size: 0.7rem; color: var(--grey); }
+
+/* ===== PREVENTE ===== */
+#prevente { background: var(--deep); }
+.prevente-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .prevente-wrapper { grid-template-columns: 1fr; gap: 48px; }
+}
+.prevente-info h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+.prevente-info p {
+  font-size: 0.95rem;
+  color: var(--grey);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+.prevente-rules {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 0.85rem;
+  color: var(--light-grey);
+  line-height: 1.5;
+}
+.rule-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  margin-top: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(204,26,26,0.5);
+}
+.rule-item strong { color: var(--white); }
+
+/* ===== FORM ===== */
+.prevente-form {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  padding: 40px;
+  position: relative;
+}
+.prevente-form::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--red), var(--orange));
+}
+.form-group {
+  margin-bottom: 24px;
+}
+.form-group label {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--grey);
+  margin-bottom: 8px;
+}
+.form-group label span.req { color: var(--red); }
+.form-group input, .form-group select {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+  padding: 14px 16px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--red);
+  background: rgba(204,26,26,0.05);
+}
+.form-group input[type="file"] {
+  padding: 12px 16px;
+  cursor: pointer;
+  color: var(--grey);
+}
+.form-group input[type="file"]::file-selector-button {
+  background: var(--red);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-right: 16px;
+  transition: background 0.2s;
+}
+.form-group input[type="file"]::file-selector-button:hover { background: var(--orange); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.photo-preview {
+  display: none;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  margin-top: 10px;
+}
+.form-notice {
+  background: rgba(244,140,6,0.08);
+  border: 1px solid rgba(244,140,6,0.25);
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  color: var(--fire);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.form-notice strong { color: var(--orange); }
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--red), var(--orange));
+  color: white;
+  border: none;
+  padding: 18px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+  box-shadow: var(--glow-red);
+  transition: box-shadow 0.3s, opacity 0.2s;
+}
+.submit-btn:hover { box-shadow: var(--glow-orange); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.form-success, .form-error {
+  display: none;
+  padding: 16px;
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  margin-top: 16px;
+}
+.form-success { color: #4ade80; border: 1px solid rgba(74,222,128,0.3); background: rgba(74,222,128,0.05); }
+.form-error { color: var(--red); border: 1px solid rgba(204,26,26,0.3); background: rgba(204,26,26,0.05); }
+.form-loader { display: none; text-align: center; margin-top: 14px; color: var(--grey); font-size: 0.85rem; letter-spacing: 2px; }
+
+/* ===== TICKER ===== */
+.ticker-wrap {
+  overflow: hidden;
+  background: var(--red);
+  padding: 12px 0;
+  white-space: nowrap;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.ticker-inner {
+  display: inline-flex;
+  animation: ticker 30s linear infinite;
+}
+.ticker-inner span {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 400;
+  font-size: 0.8rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: white;
+  padding: 0 32px;
+}
+.ticker-inner .dot { color: rgba(255,255,255,0.5); }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ===== FOOTER ===== */
+footer {
+  background: #030303;
+  border-top: 1px solid var(--border);
+  padding: 60px 48px 40px;
+  text-align: center;
+}
+footer .foot-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  letter-spacing: 4px;
+  color: var(--white);
+  display: block;
+  margin-bottom: 8px;
+}
+footer .foot-logo span { color: var(--red); }
+footer .foot-sub {
+  font-size: 0.7rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--grey);
+  margin-bottom: 32px;
+}
+footer .foot-links {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 32px;
+  list-style: none;
+  flex-wrap: wrap;
+}
+footer .foot-links a {
+  text-decoration: none;
+  color: var(--grey);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+footer .foot-links a:hover { color: var(--white); }
+footer .foot-copy {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 2px;
+}
+
+/* ===== MODAL ALREADY SENT ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-box {
+  background: var(--deep);
+  border: 1px solid var(--red);
+  max-width: 440px;
+  width: 90%;
+  padding: 48px 40px;
+  text-align: center;
+  position: relative;
+}
+.modal-box h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: var(--red);
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+.modal-box p { color: var(--grey); font-size: 0.9rem; line-height: 1.6; }
+.modal-close {
+  margin-top: 28px;
+  background: var(--red);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 3px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  nav { padding: 14px 24px; }
+  nav ul { display: none; }
+  section { padding: 70px 24px; }
+}
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .prevente-form { padding: 28px 20px; }
+  .hero-meta { gap: 28px; }
+  footer { padding: 48px 24px 32px; }
+  .security-strip { padding: 24px; gap: 28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== MUSIC ===== -->
+<!--
+  🎵 POUR AJOUTER LA MUSIQUE :
+  Remplace "VOTRE_ID_YOUTUBE" dans le src ci-dessous par l'ID de la vidéo YouTube.
+  Exemple : si l'URL est https://www.youtube.com/watch?v=abc123, l'ID est abc123
+-->
+<iframe id="yt-frame"
+  src="https://www.youtube.com/embed/kMjj4XJWHfY?autoplay=0&loop=1&playlist=kMjj4XJWHfY"
+  allow="autoplay"
+  style="display:none">
+</iframe>
+
+<!-- FLOATING MUSIC BUTTON -->
+<button id="music-btn" title="Musique d'ambiance" onclick="toggleMusic()">🔊</button>
+
+<!-- MODAL : Déjà enregistré -->
+<div class="modal-overlay" id="alreadyModal">
+  <div class="modal-box">
+    <h3>⚠ Déjà Inscrit</h3>
+    <p>Une prévente a déjà été soumise depuis ce navigateur.<br><br>
+    <strong>1 seule prévente par personne.</strong><br><br>
+    Présente-toi à l'entrée avec ton nom & prénom — tu seras sur la liste.</p>
+    <button class="modal-close" onclick="document.getElementById('alreadyModal').classList.remove('active')">Fermer</button>
+  </div>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav>
+  <a href="#hero" class="logo-nav">Liège City<span>.</span>RP</a>
+  <ul>
+    <li><a href="#lineup">Lineup</a></li>
+    <li><a href="#programme">Programme</a></li>
+    <li><a href="#prevente" class="nav-cta">Prévente</a></li>
+  </ul>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section id="hero">
+  <div class="hero-bg-lines"></div>
+  <canvas id="fire-canvas"></canvas>
+
+  <span class="hero-badge">🔥 Liège City RP – Événement Officiel</span>
+
+  <h1 class="hero-title">
+    <span class="line1">Liège City</span>
+    <span class="heat">Heatwave</span>
+  </h1>
+
+  <p class="hero-sub">Rap &nbsp;·&nbsp; Techno &nbsp;·&nbsp; Électro &nbsp;·&nbsp; Dark Vibes</p>
+
+  <div class="hero-divider"></div>
+
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="label">📅 Date</span>
+      <span class="value">À Venir</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">📍 Lieu</span>
+      <span class="value">Liège City RP</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">🎫 Entrée</span>
+      <span class="value">Prévente obligatoire</span>
+    </div>
+  </div>
+
+  <a href="#prevente" class="hero-cta">S'inscrire en Prévente</a>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <span>DJ HELLMET</span><span class="dot">★</span>
+    <span>HARDTECH & HARDSTYLE</span><span class="dot">★</span>
+    <span>5IVE STAR RECORDS</span><span class="dot">★</span>
+    <span>ARTISTES RAP</span><span class="dot">★</span>
+    <span>DANSEUSES UNICORN</span><span class="dot">★</span>
+    <span>ZONE VIP BACKSTAGE</span><span class="dot">★</span>
+    <span>GRANDE SCÈNE</span><span class="dot">★</span>
+    <span>SON & LUMIÈRES PROFESIONNEL</span><span class="dot">★</span>
+    <!-- Repeat for seamless loop -->
+    <span>DJ HELLMET</span><span class="dot">★</span>
+    <span>HARDTECH & HARDSTYLE</span><span class="dot">★</span>
+    <span>5IVE STAR RECORDS</span><span class="dot">★</span>
+    <span>ARTISTES RAP</span><span class="dot">★</span>
+    <span>DANSEUSES UNICORN</span><span class="dot">★</span>
+    <span>ZONE VIP BACKSTAGE</span><span class="dot">★</span>
+    <span>GRANDE SCÈNE</span><span class="dot">★</span>
+    <span>SON & LUMIÈRES PROFESIONNEL</span><span class="dot">★</span>
+  </div>
+</div>
+
+<!-- ===== LINEUP ===== -->
+<section id="lineup">
+  <div class="container">
+    <span class="section-label">/ Les Artistes /</span>
+    <h2 class="section-title">LINE<span>UP</span></h2>
+
+    <div class="lineup-grid">
+      <div class="artist-card">
+        <span class="artist-num">01</span>
+        <span class="tag">🎧 DJ – Hardtech / Hardstyle</span>
+        <h3>DJ Hellmet</h3>
+        <p>Le son qui fait trembler les murs. Sets ravageurs entre Hardtech et Hardstyle — une expérience sonore unique dans la nuit liégeoise.</p>
+      </div>
+
+      <div class="artist-card">
+        <span class="artist-num">02</span>
+        <span class="tag">🎤 Rap – 5ive Star Records</span>
+        <h3>Artistes Rappeurs</h3>
+        <p>Les artistes du label 5ive Star Records débarquent sur scène. Flows, énergie et représentation locale — Liège dans le rap.</p>
+      </div>
+
+      <div class="artist-card">
+        <span class="artist-num">03</span>
+        <span class="tag">💃 Performance – Unicorn Club</span>
+        <h3>Danseuses Unicorn</h3>
+        <p>Les danseuses du Unicorn Club enflamment la grande scène. Show de danse intense, visuel et inoubliable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROGRAMME ===== -->
+<section id="programme">
+  <div class="container">
+    <span class="section-label">/ Au Programme /</span>
+    <h2 class="section-title">L'ÉVÈNE<span>MENT</span></h2>
+
+    <div class="programme-grid">
+
+      <div class="prog-item">
+        <span class="prog-icon">🎸</span>
+        <h4>Concerts Live RP</h4>
+        <p>Des performances live immersives dans l'univers RP de Liège City — une scène pro, un système son de qualité.</p>
+      </div>
+
+      <div class="prog-item">
+        <span class="prog-icon">🎛️</span>
+        <h4>DJ Sets</h4>
+        <p>Sets Hardtech & Hardstyle par DJ Hellmet + surprises musicales électro. La nuit ne s'arrête pas.</p>
+      </div>
+
+      <div class="prog-item">
+        <span class="prog-icon">🍕</span>
+        <h4>Stands Food & Drink</h4>
+        <p>Stands boissons et nourriture gérés par les entreprises RP partenaires.</p>
+        <span class="prog-detail">PizzaThis & partenaires</span>
+      </div>
+
+      <div class="prog-item">
+        <span class="prog-icon">👑</span>
+        <h4>Zone VIP / Backstage</h4>
+        <p>Accès exclusif à la zone VIP et backstage, gérée par les bars RP de la ville.</p>
+        <span class="prog-detail">Tropical & bars partenaires</span>
+      </div>
+
+      <div class="prog-item">
+        <span class="prog-icon">💃</span>
+        <h4>Animations & Interactions RP</h4>
+        <p>Danseuses du Unicorn sur scène, animations et interactions immersives tout au long de la soirée.</p>
+      </div>
+
+      <div class="prog-item">
+        <span class="prog-icon">🎆</span>
+        <h4>Grande Scène Pro</h4>
+        <p>Système son & lumières professionnel, zones sécurisées — un événement pensé pour être inoubliable.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY STRIP -->
+<div class="security-strip">
+  <div class="sec-item">
+    <span class="sec-icon">🚔</span>
+    <span class="sec-label">Police Locale</span>
+    <span class="sec-sub">Sécurité périmètre</span>
+  </div>
+  <div class="sec-item">
+    <span class="sec-icon">🚨</span>
+    <span class="sec-label">Police Fédérale</span>
+    <span class="sec-sub">Sécurité renforcée</span>
+  </div>
+  <div class="sec-item">
+    <span class="sec-icon">🏥</span>
+    <span class="sec-label">C.H.L</span>
+    <span class="sec-sub">Protection médicale</span>
+  </div>
+  <div class="sec-item">
+    <span class="sec-icon">🔐</span>
+    <span class="sec-label">Zones Sécurisées</span>
+    <span class="sec-sub">Accès contrôlés</span>
+  </div>
+</div>
+
+<!-- ===== PREVENTE ===== -->
+<section id="prevente">
+  <div class="container">
+    <div class="prevente-wrapper">
+
+      <!-- INFO -->
+      <div class="prevente-info">
+        <span class="section-label">/ Inscription /</span>
+        <h2>PRÉ<span style="color:var(--red)">VENTE</span><br>OFFICIELLE</h2>
+        <p>L'accès à l'événement est soumis à une liste d'entrée. Inscris-toi en prévente pour garantir ta place au Liège City Heatwave.</p>
+        <p style="color: var(--fire); font-weight: 600;">⚠ Prévois l'argent en liquide à l'entrée. Donne ton nom & prénom au staff pour être vérifié sur la liste.</p>
+
+        <div class="prevente-rules">
+          <div class="rule-item">
+            <div class="rule-dot"></div>
+            <span><strong>1 seule prévente par personne</strong> — les doublons seront refusés à l'entrée.</span>
+          </div>
+          <div class="rule-item">
+            <div class="rule-dot"></div>
+            <span><strong>Photo de carte d'identité obligatoire</strong> pour valider l'inscription.</span>
+          </div>
+          <div class="rule-item">
+            <div class="rule-dot"></div>
+            <span><strong>Paiement à l'entrée</strong> — prévois la monnaie en liquide.</span>
+          </div>
+          <div class="rule-item">
+            <div class="rule-dot"></div>
+            <span>Présente-toi à l'entrée avec ton <strong>Nom & Prénom</strong> pour être vérifié sur la liste.</span>
+          </div>
+          <div class="rule-item">
+            <div class="rule-dot"></div>
+            <span>Tes données personnelles sont utilisées uniquement pour la liste d'entrée.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div class="prevente-form" id="prevente-form-wrapper">
+        <div class="form-notice">
+          <strong>📋 Attention :</strong> La photo de ta carte d'identité est obligatoire pour soumettre la prévente. Elle sera utilisée uniquement à des fins de vérification à l'entrée.
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Prénom <span class="req">*</span></label>
+            <input type="text" id="f-prenom" placeholder="Ton prénom" required>
+          </div>
+          <div class="form-group">
+            <label>Nom <span class="req">*</span></label>
+            <input type="text" id="f-nom" placeholder="Ton nom" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Date de naissance <span class="req">*</span></label>
+          <input type="date" id="f-dob" required>
+        </div>
+
+        <div class="form-group">
+          <label>Photo de la carte d'identité <span class="req">*</span></label>
+          <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this)" required>
+          <img id="photo-preview" class="photo-preview" src="" alt="Aperçu">
+        </div>
+
+        <button class="submit-btn" id="submit-btn" onclick="submitPrevente()">
+          ✉ Envoyer ma Prévente
+        </button>
+
+        <div class="form-loader" id="form-loader">⏳ Envoi en cours...</div>
+        <div class="form-success" id="form-success">
+          ✅ Prévente envoyée ! Tu seras sur la liste.<br>
+          <span style="font-size:0.8rem; color:var(--grey); letter-spacing:1px; font-family:'Rajdhani',sans-serif;">Présente-toi à l'entrée avec ton nom & prénom.</span>
+        </div>
+        <div class="form-error" id="form-error">❌ Erreur lors de l'envoi. Réessaie.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="sep-fire"></div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <span class="foot-logo">Liège City<span> Heatwave</span></span>
+  <p class="foot-sub">Liège City RP – Événement Officiel</p>
+  <ul class="foot-links">
+    <li><a href="#lineup">Lineup</a></li>
+    <li><a href="#programme">Programme</a></li>
+    <li><a href="#prevente">Prévente</a></li>
+  </ul>
+  <p class="foot-copy">© Liège City RP – Tous droits réservés</p>
+</footer>
+
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// ──────────────────────────────────────────────
+// 🔧 CONFIGURATION — Remplace par ton Webhook Discord
+// ──────────────────────────────────────────────
+const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496907610761330759/vRda1s09EgCsDOCburn4y1az3PlPlHvgkJEaO1yWpQ-OQGHYQOh1GafAJI5_KuCw1Rb7";
+// Exemple: "https://discord.com/api/webhooks/123456789/abcdef..."
+
+// ──────────────────────────────────────────────
+// 🎵 MUSIQUE
+// ──────────────────────────────────────────────
+let musicPlaying = false;
+const frame = document.getElementById('yt-frame');
+const btn = document.getElementById('music-btn');
+
+function toggleMusic() {
+  musicPlaying = !musicPlaying;
+  if (musicPlaying) {
+    frame.style.display = 'block';
+    const src = frame.src;
+    frame.src = src.replace('autoplay=0', 'autoplay=1');
+    btn.textContent = '🔇';
+  } else {
+    frame.style.display = 'none';
+    frame.src = frame.src.replace('autoplay=1', 'autoplay=0');
+    btn.textContent = '🔊';
+  }
+}
+
+// ──────────────────────────────────────────────
+// 📸 PREVIEW PHOTO
+// ──────────────────────────────────────────────
+function previewPhoto(input) {
+  const preview = document.getElementById('photo-preview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// ──────────────────────────────────────────────
+// 📋 SOUMISSION PREVENTE
+// ──────────────────────────────────────────────
+async function submitPrevente() {
+  // Check si déjà soumis
+  if (localStorage.getItem('lcw_prevente_sent') === 'true') {
+    document.getElementById('alreadyModal').classList.add('active');
+    return;
+  }
+
+  const prenom = document.getElementById('f-prenom').value.trim();
+  const nom = document.getElementById('f-nom').value.trim();
+  const dob = document.getElementById('f-dob').value;
+  const photoFile = document.getElementById('f-photo').files[0];
+
+  // Validation
+  if (!prenom || !nom || !dob) {
+    showError('Remplis tous les champs obligatoires.');
+    return;
+  }
+  if (!photoFile) {
+    showError('La photo de la carte d\'identité est obligatoire.');
+    return;
+  }
+
+  // Vérification âge (optionnel — peut être retiré si pas nécessaire)
+  const dobDate = new Date(dob);
+  const today = new Date();
+  const age = today.getFullYear() - dobDate.getFullYear();
+
+  // UI loading
+  setLoading(true);
+
+  try {
+    // Construire le FormData pour envoyer la photo + embed Discord
+    const formData = new FormData();
+
+    // Message embed Discord
+    const embedPayload = {
+      embeds: [{
+        title: "🔥 Nouvelle Prévente – Liège City Heatwave",
+        color: 0xcc1a1a,
+        fields: [
+          { name: "👤 Prénom", value: prenom, inline: true },
+          { name: "👤 Nom", value: nom, inline: true },
+          { name: "🎂 Date de naissance", value: dob, inline: false },
+          { name: "📋 Statut", value: "En attente de validation", inline: false }
+        ],
+        footer: { text: "Liège City RP – Prévente Officielle" },
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    formData.append('payload_json', JSON.stringify(embedPayload));
+    formData.append('files[0]', photoFile, `ID_${nom}_${prenom}.${photoFile.name.split('.').pop()}`);
+
+    const res = await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (res.ok || res.status === 204) {
+      // Succès
+      localStorage.setItem('lcw_prevente_sent', 'true');
+      document.getElementById('form-success').style.display = 'block';
+      document.getElementById('form-error').style.display = 'none';
+      document.getElementById('submit-btn').style.display = 'none';
+      document.getElementById('form-loader').style.display = 'none';
+    } else {
+      throw new Error('Webhook failed: ' + res.status);
+    }
+  } catch (err) {
+    console.error(err);
+    showError('Erreur lors de l\'envoi. Vérifie ta connexion et réessaie.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(loading) {
+  document.getElementById('submit-btn').disabled = loading;
+  document.getElementById('form-loader').style.display = loading ? 'block' : 'none';
+  if (loading) document.getElementById('form-error').style.display = 'none';
+}
+
+function showError(msg) {
+  const el = document.getElementById('form-error');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+}
+
+// ──────────────────────────────────────────────
+// 🔥 FIRE PARTICLE CANVAS
+// ──────────────────────────────────────────────
+const canvas = document.getElementById('fire-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height + Math.random() * 20;
+    this.vx = (Math.random() - 0.5) * 0.8;
+    this.vy = -(Math.random() * 2 + 0.5);
+    this.life = 1;
+    this.decay = Math.random() * 0.008 + 0.004;
+    this.size = Math.random() * 4 + 1;
+    this.r = 255;
+    this.g = Math.floor(Math.random() * 100 + 40);
+    this.b = 0;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life -= this.decay;
+    this.size *= 0.997;
+    this.vx += (Math.random() - 0.5) * 0.05;
+    if (this.life <= 0 || this.size < 0.3) this.reset();
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.life * 0.6;
+    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
+    grd.addColorStop(0, `rgba(${this.r},${this.g},${this.b},1)`);
+    grd.addColorStop(1, `rgba(${this.r},${this.g},${this.b},0)`);
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+for (let i = 0; i < 200; i++) {
+  const p = new Particle();
+  p.y = Math.random() * canvas.height;
+  p.life = Math.random();
+  particles.push(p);
+}
+
+function animateFire() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animateFire);
+}
+animateFire();
+
+// ──────────────────────────────────────────────
+// 📜 SCROLL ANIMATIONS
+// ──────────────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.artist-card, .prog-item').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(24px)';
+  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
