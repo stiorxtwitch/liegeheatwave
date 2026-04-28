@@ -75,7 +75,6 @@ body::before {
   0%,100% { box-shadow: var(--glow-red), 0 4px 20px rgba(0,0,0,0.6); }
   50% { box-shadow: 0 0 50px rgba(204,26,26,0.6), 0 4px 20px rgba(0,0,0,0.6); }
 }
-#yt-frame { display: none; }
 
 /* ===== NAVBAR ===== */
 nav {
@@ -133,7 +132,6 @@ nav ul a:hover { color: var(--white); }
   padding: 120px 24px 80px;
 }
 
-/* Fire particles canvas */
 #fire-canvas {
   position: absolute;
   bottom: 0;
@@ -465,9 +463,7 @@ section { padding: 100px 48px; position: relative; }
   height: 2px;
   background: linear-gradient(90deg, var(--red), var(--orange));
 }
-.form-group {
-  margin-bottom: 24px;
-}
+.form-group { margin-bottom: 24px; }
 .form-group label {
   display: block;
   font-family: 'Oswald', sans-serif;
@@ -633,7 +629,7 @@ footer .foot-copy {
   letter-spacing: 2px;
 }
 
-/* ===== MODAL ALREADY SENT ===== */
+/* ===== MODAL ===== */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -692,12 +688,20 @@ footer .foot-copy {
 </head>
 <body>
 
-<!-- ===== MUSIC ===== -->
-<iframe id="yt-frame"
-  src="https://www.youtube.com/embed/kMjj4XJWHfY?autoplay=0&loop=1&playlist=kMjj4XJWHfY&enablejsapi=1"
-  allow="autoplay"
-  style="display:none">
-</iframe>
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  🎵 MUSIQUE — REMPLACE L'URL CI-DESSOUS PAR TON LIEN RAW    ║
+  ║                                                              ║
+  ║  Format GitHub Raw :                                         ║
+  ║  https://raw.githubusercontent.com/TON_USER/TON_REPO/main/musique.mp3
+  ║                                                              ║
+  ║  Exemple :                                                   ║
+  ║  https://raw.githubusercontent.com/JohnDoe/heatwave/main/musique.mp3
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+<audio id="bg-music" loop preload="none">
+  <source src="https://github.com/stiorxtwitch/liegeheatwave/blob/main/musique.mp3" type="audio/mpeg">
+</audio>
 
 <!-- FLOATING MUSIC BUTTON -->
 <button id="music-btn" title="Musique d'ambiance" onclick="toggleMusic()">🔊</button>
@@ -768,7 +772,6 @@ footer .foot-copy {
     <span>ZONE VIP BACKSTAGE</span><span class="dot">★</span>
     <span>GRANDE SCÈNE</span><span class="dot">★</span>
     <span>SON & LUMIÈRES PROFESIONNEL</span><span class="dot">★</span>
-    <!-- Repeat for seamless loop -->
     <span>DJ HELLMET</span><span class="dot">★</span>
     <span>HARDTECH & HARDSTYLE</span><span class="dot">★</span>
     <span>5IVE STAR RECORDS</span><span class="dot">★</span>
@@ -785,7 +788,6 @@ footer .foot-copy {
   <div class="container">
     <span class="section-label">/ Les Artistes /</span>
     <h2 class="section-title">LINE<span>UP</span></h2>
-
     <div class="lineup-grid">
       <div class="artist-card">
         <span class="artist-num">01</span>
@@ -793,14 +795,12 @@ footer .foot-copy {
         <h3>DJ Hellmet</h3>
         <p>Le son qui fait trembler les murs. Sets ravageurs entre Hardtech et Hardstyle — une expérience sonore unique dans la nuit liégeoise.</p>
       </div>
-
       <div class="artist-card">
         <span class="artist-num">02</span>
         <span class="tag">🎤 Rap – 5ive Star Records</span>
         <h3>Artistes Rappeurs</h3>
         <p>Les artistes du label 5ive Star Records débarquent sur scène. Flows, énergie et représentation locale — Liège dans le rap.</p>
       </div>
-
       <div class="artist-card">
         <span class="artist-num">03</span>
         <span class="tag">💃 Performance – Unicorn Club</span>
@@ -816,47 +816,39 @@ footer .foot-copy {
   <div class="container">
     <span class="section-label">/ Au Programme /</span>
     <h2 class="section-title">L'ÉVÈNE<span>MENT</span></h2>
-
     <div class="programme-grid">
-
       <div class="prog-item">
         <span class="prog-icon">🎸</span>
         <h4>Concerts Live RP</h4>
         <p>Des performances live immersives dans l'univers RP de Liège City — une scène pro, un système son de qualité.</p>
       </div>
-
       <div class="prog-item">
         <span class="prog-icon">🎛️</span>
         <h4>DJ Sets</h4>
         <p>Sets Hardtech & Hardstyle par DJ Hellmet + surprises musicales électro. La nuit ne s'arrête pas.</p>
       </div>
-
       <div class="prog-item">
         <span class="prog-icon">🍕</span>
         <h4>Stands Food & Drink</h4>
         <p>Stands boissons et nourriture gérés par les entreprises RP partenaires.</p>
         <span class="prog-detail">PizzaThis & partenaires</span>
       </div>
-
       <div class="prog-item">
         <span class="prog-icon">👑</span>
         <h4>Zone VIP / Backstage</h4>
         <p>Accès exclusif à la zone VIP et backstage, gérée par les bars RP de la ville.</p>
         <span class="prog-detail">Tropical & bars partenaires</span>
       </div>
-
       <div class="prog-item">
         <span class="prog-icon">💃</span>
         <h4>Animations & Interactions RP</h4>
         <p>Danseuses du Unicorn sur scène, animations et interactions immersives tout au long de la soirée.</p>
       </div>
-
       <div class="prog-item">
         <span class="prog-icon">🎆</span>
         <h4>Grande Scène Pro</h4>
         <p>Système son & lumières professionnel, zones sécurisées — un événement pensé pour être inoubliable.</p>
       </div>
-
     </div>
   </div>
 </section>
@@ -889,14 +881,11 @@ footer .foot-copy {
 <section id="prevente">
   <div class="container">
     <div class="prevente-wrapper">
-
-      <!-- INFO -->
       <div class="prevente-info">
         <span class="section-label">/ Inscription /</span>
         <h2>PRÉ<span style="color:var(--red)">VENTE</span><br>OFFICIELLE</h2>
         <p>L'accès à l'événement est soumis à une liste d'entrée. Inscris-toi en prévente pour garantir ta place au Liège City Heatwave.</p>
         <p style="color: var(--fire); font-weight: 600;">⚠ Prévois l'argent en liquide à l'entrée. Donne ton nom & prénom au staff pour être vérifié sur la liste.</p>
-
         <div class="prevente-rules">
           <div class="rule-item">
             <div class="rule-dot"></div>
@@ -921,12 +910,10 @@ footer .foot-copy {
         </div>
       </div>
 
-      <!-- FORM -->
       <div class="prevente-form" id="prevente-form-wrapper">
         <div class="form-notice">
           <strong>📋 Attention :</strong> La photo de ta carte d'identité est obligatoire pour soumettre la prévente. Elle sera utilisée uniquement à des fins de vérification à l'entrée.
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label>Prénom <span class="req">*</span></label>
@@ -937,22 +924,18 @@ footer .foot-copy {
             <input type="text" id="f-nom" placeholder="Ton nom" required>
           </div>
         </div>
-
         <div class="form-group">
           <label>Date de naissance <span class="req">*</span></label>
           <input type="date" id="f-dob" required>
         </div>
-
         <div class="form-group">
           <label>Photo de la carte d'identité <span class="req">*</span></label>
           <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this)" required>
           <img id="photo-preview" class="photo-preview" src="" alt="Aperçu">
         </div>
-
         <button class="submit-btn" id="submit-btn" onclick="submitPrevente()">
           ✉ Envoyer ma Prévente
         </button>
-
         <div class="form-loader" id="form-loader">⏳ Envoi en cours...</div>
         <div class="form-success" id="form-success">
           ✅ Prévente envoyée ! Tu seras sur la liste.<br>
@@ -960,7 +943,6 @@ footer .foot-copy {
         </div>
         <div class="form-error" id="form-error">❌ Erreur lors de l'envoi. Réessaie.</div>
       </div>
-
     </div>
   </div>
 </section>
@@ -982,65 +964,72 @@ footer .foot-copy {
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
+
 // ──────────────────────────────────────────────
 // 🔧 CONFIGURATION
 // ──────────────────────────────────────────────
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496907610761330759/vRda1s09EgCsDOCburn4y1az3PlPlHvgkJEaO1yWpQ-OQGHYQOh1GafAJI5_KuCw1Rb7";
 
 // ──────────────────────────────────────────────
-// 🎵 MUSIQUE — Lance à la première interaction
+// 🎵 MUSIQUE — HTML5 Audio (remplace YouTube)
 // ──────────────────────────────────────────────
+const audio = document.getElementById('bg-music');
+const musicBtn = document.getElementById('music-btn');
+let musicStarted = false;
 let musicPlaying = false;
-let musicStarted = false; // garde en mémoire si la musique a déjà été lancée UNE fois
-const frame = document.getElementById('yt-frame');
-const btn = document.getElementById('music-btn');
 
+// Volume d'ambiance (pas trop fort)
+audio.volume = 0.45;
+
+/**
+ * Lance la musique UNE SEULE FOIS sur la première interaction utilisateur.
+ * Les navigateurs modernes bloquent l'autoplay sans geste utilisateur —
+ * cette approche est la seule qui fonctionne de façon fiable.
+ */
 function startMusicOnce() {
-  // Si déjà lancée une fois, on ne fait rien ici (évite les re-triggers)
   if (musicStarted) return;
   musicStarted = true;
 
-  // Lancer la musique
-  frame.style.display = 'block';
-  frame.src = frame.src.replace('autoplay=0', 'autoplay=1');
-  musicPlaying = true;
-  btn.textContent = '🔇';
+  audio.play()
+    .then(() => {
+      musicPlaying = true;
+      musicBtn.textContent = '🔇';
+    })
+    .catch(() => {
+      // Autoplay bloqué malgré l'interaction — l'utilisateur devra cliquer manuellement
+      musicStarted = false;
+    });
 
-  // Supprimer les listeners — plus besoin après la première interaction
+  // Nettoyer les listeners après la première interaction réussie
   ['click', 'scroll', 'touchstart', 'keydown'].forEach(evt => {
     document.removeEventListener(evt, startMusicOnce);
   });
 }
 
-// Attacher les listeners sur les événements utilisateur courants
+// Écouter la première interaction sur la page
 ['click', 'scroll', 'touchstart', 'keydown'].forEach(evt => {
-  document.addEventListener(evt, startMusicOnce, { once: false, passive: true });
+  document.addEventListener(evt, startMusicOnce, { passive: true });
 });
 
-// Bouton manuel : toggle ON/OFF après que la musique soit lancée
+/**
+ * Bouton flottant : toggle play/pause
+ */
 function toggleMusic() {
   if (!musicStarted) {
-    // Premier clic = on lance (startMusicOnce sera appelé par le listener click, mais on force ici aussi)
+    // Premier clic sur le bouton = lancer
     startMusicOnce();
     return;
   }
 
-  // Déjà lancée — on toggle pause/play en rechargant le src
-  musicPlaying = !musicPlaying;
   if (musicPlaying) {
-    frame.style.display = 'block';
-    // Forcer le rechargement avec autoplay
-    const currentSrc = frame.src;
-    frame.src = '';
-    setTimeout(() => {
-      frame.src = currentSrc.replace('autoplay=0', 'autoplay=1');
-    }, 50);
-    btn.textContent = '🔇';
+    audio.pause();
+    musicPlaying = false;
+    musicBtn.textContent = '🔊';
   } else {
-    // Couper : on vide le src (stoppe la vidéo/audio)
-    frame.style.display = 'none';
-    frame.src = frame.src.replace('autoplay=1', 'autoplay=0');
-    btn.textContent = '🔊';
+    audio.play().then(() => {
+      musicPlaying = true;
+      musicBtn.textContent = '🔇';
+    });
   }
 }
 
@@ -1068,9 +1057,9 @@ async function submitPrevente() {
     return;
   }
 
-  const prenom = document.getElementById('f-prenom').value.trim();
-  const nom = document.getElementById('f-nom').value.trim();
-  const dob = document.getElementById('f-dob').value;
+  const prenom    = document.getElementById('f-prenom').value.trim();
+  const nom       = document.getElementById('f-nom').value.trim();
+  const dob       = document.getElementById('f-dob').value;
   const photoFile = document.getElementById('f-photo').files[0];
 
   if (!prenom || !nom || !dob) {
@@ -1078,7 +1067,7 @@ async function submitPrevente() {
     return;
   }
   if (!photoFile) {
-    showError('La photo de la carte d\'identité est obligatoire.');
+    showError("La photo de la carte d'identité est obligatoire.");
     return;
   }
 
@@ -1086,16 +1075,15 @@ async function submitPrevente() {
 
   try {
     const formData = new FormData();
-
     const embedPayload = {
       embeds: [{
         title: "🔥 Nouvelle Prévente – Liège City Heatwave",
         color: 0xcc1a1a,
         fields: [
-          { name: "👤 Prénom", value: prenom, inline: true },
-          { name: "👤 Nom", value: nom, inline: true },
-          { name: "🎂 Date de naissance", value: dob, inline: false },
-          { name: "📋 Statut", value: "En attente de validation", inline: false }
+          { name: "👤 Prénom",              value: prenom, inline: true  },
+          { name: "👤 Nom",                 value: nom,    inline: true  },
+          { name: "🎂 Date de naissance",   value: dob,    inline: false },
+          { name: "📋 Statut",              value: "En attente de validation", inline: false }
         ],
         footer: { text: "Liège City RP – Prévente Officielle" },
         timestamp: new Date().toISOString()
@@ -1105,17 +1093,14 @@ async function submitPrevente() {
     formData.append('payload_json', JSON.stringify(embedPayload));
     formData.append('files[0]', photoFile, `ID_${nom}_${prenom}.${photoFile.name.split('.').pop()}`);
 
-    const res = await fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      body: formData
-    });
+    const res = await fetch(DISCORD_WEBHOOK_URL, { method: 'POST', body: formData });
 
     if (res.ok || res.status === 204) {
       localStorage.setItem('lcw_prevente_sent', 'true');
       document.getElementById('form-success').style.display = 'block';
-      document.getElementById('form-error').style.display = 'none';
-      document.getElementById('submit-btn').style.display = 'none';
-      document.getElementById('form-loader').style.display = 'none';
+      document.getElementById('form-error').style.display   = 'none';
+      document.getElementById('submit-btn').style.display   = 'none';
+      document.getElementById('form-loader').style.display  = 'none';
     } else {
       throw new Error('Webhook failed: ' + res.status);
     }
@@ -1128,14 +1113,14 @@ async function submitPrevente() {
 }
 
 function setLoading(loading) {
-  document.getElementById('submit-btn').disabled = loading;
-  document.getElementById('form-loader').style.display = loading ? 'block' : 'none';
+  document.getElementById('submit-btn').disabled               = loading;
+  document.getElementById('form-loader').style.display         = loading ? 'block' : 'none';
   if (loading) document.getElementById('form-error').style.display = 'none';
 }
 
 function showError(msg) {
   const el = document.getElementById('form-error');
-  el.textContent = '❌ ' + msg;
+  el.textContent  = '❌ ' + msg;
   el.style.display = 'block';
 }
 
@@ -1143,11 +1128,10 @@ function showError(msg) {
 // 🔥 FIRE PARTICLE CANVAS
 // ──────────────────────────────────────────────
 const canvas = document.getElementById('fire-canvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
+const ctx    = canvas.getContext('2d');
 
 function resizeCanvas() {
-  canvas.width = window.innerWidth;
+  canvas.width  = window.innerWidth;
   canvas.height = canvas.offsetHeight;
 }
 resizeCanvas();
@@ -1156,23 +1140,23 @@ window.addEventListener('resize', resizeCanvas);
 class Particle {
   constructor() { this.reset(); }
   reset() {
-    this.x = Math.random() * canvas.width;
-    this.y = canvas.height + Math.random() * 20;
-    this.vx = (Math.random() - 0.5) * 0.8;
-    this.vy = -(Math.random() * 2 + 0.5);
-    this.life = 1;
+    this.x     = Math.random() * canvas.width;
+    this.y     = canvas.height + Math.random() * 20;
+    this.vx    = (Math.random() - 0.5) * 0.8;
+    this.vy    = -(Math.random() * 2 + 0.5);
+    this.life  = 1;
     this.decay = Math.random() * 0.008 + 0.004;
-    this.size = Math.random() * 4 + 1;
-    this.r = 255;
-    this.g = Math.floor(Math.random() * 100 + 40);
-    this.b = 0;
+    this.size  = Math.random() * 4 + 1;
+    this.r     = 255;
+    this.g     = Math.floor(Math.random() * 100 + 40);
+    this.b     = 0;
   }
   update() {
-    this.x += this.vx;
-    this.y += this.vy;
+    this.x    += this.vx;
+    this.y    += this.vy;
     this.life -= this.decay;
     this.size *= 0.997;
-    this.vx += (Math.random() - 0.5) * 0.05;
+    this.vx   += (Math.random() - 0.5) * 0.05;
     if (this.life <= 0 || this.size < 0.3) this.reset();
   }
   draw() {
@@ -1189,9 +1173,10 @@ class Particle {
   }
 }
 
+const particles = [];
 for (let i = 0; i < 200; i++) {
   const p = new Particle();
-  p.y = Math.random() * canvas.height;
+  p.y    = Math.random() * canvas.height;
   p.life = Math.random();
   particles.push(p);
 }
@@ -1209,18 +1194,19 @@ animateFire();
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
+      entry.target.style.opacity   = '1';
       entry.target.style.transform = 'translateY(0)';
     }
   });
 }, { threshold: 0.1 });
 
 document.querySelectorAll('.artist-card, .prog-item').forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(24px)';
+  el.style.opacity    = '0';
+  el.style.transform  = 'translateY(24px)';
   el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
   observer.observe(el);
 });
+
 </script>
 </body>
 </html>
