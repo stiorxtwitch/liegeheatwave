@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heatwave Stage Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────── RESET */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100%;
+  background:#000;
+  overflow:hidden;
+  cursor:none;
+}
+
+/* ─────────────────────────────────────────────────── LAYERS */
+/* Ordre (bas→haut) :
+   1. vidéo iframe
+   2. canvas particules + grid
+   3. flash overlay
+   4. scanlines + grain
+   5. contenu artiste
+   6. UI controls
+*/
+
+/* 1 ─ Vidéo iframe background */
+#video-bg {
+  position:fixed; inset:0; z-index:1;
+  width:100%; height:100%;
+  border:none;
+  opacity:0.35;
+  pointer-events:none;
+}
+#video-bg.hidden { display:none; }
+
+/* 2 ─ Canvas effets */
+#fx-canvas {
+  position:fixed; inset:0; z-index:2;
+  width:100%; height:100%;
+  pointer-events:none;
+}
+
+/* 3 ─ Flash overlay (basses) */
+#flash-overlay {
+  position:fixed; inset:0; z-index:3;
+  background:#fff;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.05s linear;
+}
+
+/* 4 ─ Scanlines + grain */
+#scanlines {
+  position:fixed; inset:0; z-index:4;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,.22) 2px, rgba(0,0,0,.22) 4px
+  );
+  pointer-events:none;
+}
+#grain {
+  position:fixed; inset:0; z-index:5;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events:none;
+  opacity:.5;
+}
+
+/* 5 ─ Contenu artiste */
+#stage-content {
+  position:fixed; inset:0; z-index:6;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  pointer-events:none;
+  transition: filter .05s;
+}
+
+/* Logo artiste */
+#artist-logo {
+  max-width: min(55vw, 480px);
+  max-height: 38vh;
+  object-fit: contain;
+  display:none;
+  filter: drop-shadow(0 0 20px rgba(255,255,255,0));
+  transform-origin:center;
+  transition: transform .08s cubic-bezier(.25,1.5,.5,1), filter .1s;
+  margin-bottom: 28px;
+  mix-blend-mode: screen;   /* fond noir du logo transparent */
+}
+#artist-logo.visible { display:block; }
+
+/* Nom artiste */
+#artist-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(4rem, 14vw, 13rem);
+  letter-spacing: 4px;
+  line-height: 0.9;
+  text-align:center;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95vw;
+  padding: 0 2vw;
+  text-shadow: 0 0 0px rgba(255,255,255,0);
+  transition: text-shadow .08s, letter-spacing .08s;
+  position: relative;
+}
+/* Outline version qui clignote */
+#artist-name-ghost {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(4rem, 14vw, 13rem);
+  letter-spacing: 4px;
+  line-height: 0.9;
+  text-align:center;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.15);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95vw;
+  padding: 0 2vw;
+  position:absolute;
+  top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  pointer-events:none;
+  z-index:7;
+}
+
+/* Sous-ligne barre blanche */
+#name-bar {
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent);
+  margin-top: 16px;
+  transition: width .3s ease, opacity .1s;
+}
+
+/* Vignette bords */
+#vignette {
+  position:fixed; inset:0; z-index:8;
+  background: radial-gradient(ellipse at center,
+    transparent 50%,
+    rgba(0,0,0,.7) 100%
+  );
+  pointer-events:none;
+  opacity:1;
+  transition: opacity .05s;
+}
+
+/* 6 ─ UI Controls */
+#ui-controls {
+  position:fixed;
+  bottom:20px; right:24px;
+  z-index:20;
+  display:flex;
+  gap:10px;
+  opacity:0;
+  transition: opacity .3s;
+  cursor:default;
+}
+body:hover #ui-controls { opacity:1; cursor:default; }
+
+.ctrl-btn {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.7);
+  padding: 8px 14px;
+  font-family: 'Oswald', sans-serif;
+  font-size: .7rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+  backdrop-filter: blur(8px);
+}
+.ctrl-btn:hover { background: rgba(255,255,255,.18); color:#fff; }
+
+/* Status micro */
+#mic-status {
+  position:fixed;
+  top:18px; right:20px;
+  z-index:20;
+  font-family:'Oswald',sans-serif;
+  font-size:.6rem;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.25);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  opacity:0;
+  transition:opacity .3s;
+}
+body:hover #mic-status { opacity:1; }
+.mic-dot {
+  width:6px; height:6px;
+  border-radius:50%;
+  background:rgba(255,255,255,.3);
+  transition:background .1s;
+}
+.mic-dot.active { background:rgba(255,255,255,.9); animation:dotPulse .5s infinite alternate; }
+@keyframes dotPulse { from{opacity:.5} to{opacity:1} }
+
+/* Bass meter bar (bas de l'écran) */
+#bass-meter {
+  position:fixed;
+  bottom:0; left:0; right:0;
+  height:2px;
+  z-index:9;
+  background:rgba(255,255,255,.04);
+  overflow:hidden;
+}
+#bass-fill {
+  height:100%;
+  width:0%;
+  background: rgba(255,255,255,.6);
+  transition:width .05s linear;
+  box-shadow:0 0 10px rgba(255,255,255,.4);
+}
+
+/* ─ Glitch animation ─ */
+@keyframes glitch1 {
+  0%,100%{ clip-path:none; transform:none; }
+  10%{ clip-path:polygon(0 18%,100% 18%,100% 38%,0 38%); transform:translateX(-4px); }
+  20%{ clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%); transform:translateX(4px); }
+  30%{ clip-path:none; transform:none; }
+}
+@keyframes glitch2 {
+  0%,100%{ clip-path:none; transform:none; opacity:1; }
+  10%{ clip-path:polygon(0 40%,100% 40%,100% 58%,0 58%); transform:translateX(5px) skewX(-2deg); opacity:.8; }
+  25%{ clip-path:none; transform:none; opacity:1; }
+}
+</style>
+</head>
+<body>
+
+<!-- Vidéo background -->
+<iframe id="video-bg" class="hidden" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+<!-- Canvas effets basses -->
+<canvas id="fx-canvas"></canvas>
+
+<!-- Flash blanc (basses) -->
+<div id="flash-overlay"></div>
+
+<!-- Scanlines + grain -->
+<div id="scanlines"></div>
+<div id="grain"></div>
+
+<!-- Vignette -->
+<div id="vignette"></div>
+
+<!-- Contenu principal -->
+<div id="stage-content">
+  <img id="artist-logo" src="" alt="Logo">
+  <div style="position:relative; width:100%; text-align:center;">
+    <div id="artist-name">ARTISTE</div>
+    <div id="artist-name-ghost">ARTISTE</div>
+  </div>
+  <div id="name-bar"></div>
+</div>
+
+<!-- Bass meter -->
+<div id="bass-meter"><div id="bass-fill"></div></div>
+
+<!-- UI Controls (visibles au survol) -->
+<div id="ui-controls">
+  <button class="ctrl-btn" onclick="toggleMic()" id="mic-btn">🎤 MIC OFF</button>
+  <button class="ctrl-btn" onclick="toggleFullscreen()">⛶ FULLSCREEN</button>
+  <button class="ctrl-btn" onclick="window.close()">← CONFIG</button>
+</div>
+
+<!-- Mic status -->
+<div id="mic-status">
+  <div class="mic-dot" id="mic-dot"></div>
+  <span id="mic-label">MIC OFF</span>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════
+// CONFIG depuis localStorage
+// ═══════════════════════════════════════════════════════
+const cfg = JSON.parse(localStorage.getItem('hw_stage_config') || '{}');
+const ARTIST_NAME  = cfg.artistName  || 'ARTISTE';
+const LOGO_DATA    = cfg.logo        || null;
+const VIDEO_INFO   = cfg.videoInfo   || null;
+const SENSITIVITY  = (cfg.sensitivity || 6) / 10;  // 0.1 → 1.0
+
+// ─ Nom artiste ─────────────────────────────────────────
+document.getElementById('artist-name').textContent       = ARTIST_NAME;
+document.getElementById('artist-name-ghost').textContent = ARTIST_NAME;
+document.title = ARTIST_NAME + ' — Heatwave Stage';
+
+// ─ Logo ─────────────────────────────────────────────────
+const logoEl = document.getElementById('artist-logo');
+if (LOGO_DATA) {
+  logoEl.src = LOGO_DATA;
+  logoEl.classList.add('visible');
+  // Attendre chargement pour avoir les dimensions
+  logoEl.onload = () => { updateNameBar(); };
+}
+
+// ─ Barre sous le nom ────────────────────────────────────
+function updateNameBar() {
+  const bar = document.getElementById('name-bar');
+  const nameEl = document.getElementById('artist-name');
+  bar.style.width = Math.min(nameEl.scrollWidth, window.innerWidth * 0.9) + 'px';
+}
+window.addEventListener('resize', updateNameBar);
+updateNameBar();
+
+// ─ Vidéo background ─────────────────────────────────────
+const videoFrame = document.getElementById('video-bg');
+if (VIDEO_INFO) {
+  let embedURL = '';
+  if (VIDEO_INFO.type === 'youtube') {
+    embedURL = `https://www.youtube.com/embed/${VIDEO_INFO.id}?autoplay=1&mute=1&loop=1&playlist=${VIDEO_INFO.id}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3`;
+  } else if (VIDEO_INFO.type === 'twitch') {
+    const parent = encodeURIComponent(location.hostname || 'localhost');
+    embedURL = `https://player.twitch.tv/?channel=${VIDEO_INFO.channel}&parent=${parent}&muted=true&autoplay=true`;
+  }
+  if (embedURL) {
+    videoFrame.src = embedURL;
+    videoFrame.classList.remove('hidden');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// CANVAS FX — Particules + Grille
+// ═══════════════════════════════════════════════════════
+const canvas = document.getElementById('fx-canvas');
+const ctx    = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// ── Particules ───────────────────────────────────────────
+class Particle {
+  constructor(x, y, burst = false) {
+    this.x = x ?? Math.random() * canvas.width;
+    this.y = y ?? canvas.height + 10;
+    if (burst) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 6 + 2;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.life = 1;
+      this.decay = Math.random() * 0.025 + 0.018;
+      this.size  = Math.random() * 3 + 1;
+      this.burst = true;
+    } else {
+      this.vx    = (Math.random() - 0.5) * 0.6;
+      this.vy    = -(Math.random() * 1.2 + 0.3);
+      this.life  = Math.random() * 0.6 + 0.2;
+      this.decay = Math.random() * 0.004 + 0.002;
+      this.size  = Math.random() * 2.5 + 0.5;
+      this.burst = false;
+    }
+    const v = Math.floor(Math.random() * 80 + 175);
+    this.r = v; this.g = v; this.b = v;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life -= this.decay;
+    if (!this.burst) {
+      this.size *= 0.998;
+      this.vx  += (Math.random() - 0.5) * 0.04;
+    } else {
+      this.vy  += 0.12; // gravité
+      this.size *= 0.96;
+    }
+    return this.life > 0 && this.size > 0.2;
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, this.life) * 0.7;
+    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
+    grd.addColorStop(0, `rgba(${this.r},${this.g},${this.b},1)`);
+    grd.addColorStop(1, `rgba(${this.r},${this.g},${this.b},0)`);
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+let particles = [];
+// Pré-remplir quelques particules de fond
+for (let i = 0; i < 120; i++) {
+  const p = new Particle();
+  p.y    = Math.random() * canvas.height;
+  p.life = Math.random() * 0.5 + 0.1;
+  particles.push(p);
+}
+
+// Burst de particules sur une position
+function spawnBurst(x, y, count = 30) {
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle(x, y, true));
+  }
+}
+
+// ── Grille animée ────────────────────────────────────────
+let gridOffset = 0;
+let gridIntensity = 0; // 0-1, monte avec les basses
+
+function drawGrid() {
+  const step = 70;
+  ctx.save();
+  ctx.strokeStyle = `rgba(255,255,255,${0.025 + gridIntensity * 0.12})`;
+  ctx.lineWidth   = 0.5 + gridIntensity * 1.5;
+
+  // Lignes horizontales
+  for (let y = (gridOffset % step); y < canvas.height; y += step) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+  // Lignes verticales
+  for (let x = (gridOffset % step); x < canvas.width; x += step) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+  }
+  ctx.restore();
+  gridOffset += 0.3;
+}
+
+// ── Cercle d'onde (bass ring) ─────────────────────────────
+const rings = [];
+function spawnRing(intensity) {
+  rings.push({ r: 30, maxR: Math.min(canvas.width, canvas.height) * 0.7, life: 1, speed: 4 + intensity * 8 });
+}
+function drawRings() {
+  rings.forEach((ring, i) => {
+    ring.r    += ring.speed;
+    ring.life  = 1 - ring.r / ring.maxR;
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,255,255,${Math.max(0, ring.life * 0.4)})`;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, ring.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  });
+  // Nettoyer les rings morts
+  for (let i = rings.length - 1; i >= 0; i--) {
+    if (rings[i].life <= 0) rings.splice(i, 1);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// AUDIO ANALYSIS — Microphone
+// ═══════════════════════════════════════════════════════
+let audioCtx    = null;
+let analyser    = null;
+let dataArray   = null;
+let micStream   = null;
+let micActive   = false;
+let micBtnEl    = document.getElementById('mic-btn');
+let micDot      = document.getElementById('mic-dot');
+let micLabel    = document.getElementById('mic-label');
+
+async function startMic() {
+  try {
+    audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const source = audioCtx.createMediaStreamSource(micStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize       = 512;
+    analyser.smoothingTimeConstant = 0.75;
+    source.connect(analyser);
+    dataArray  = new Uint8Array(analyser.frequencyBinCount);
+    micActive  = true;
+    micDot.classList.add('active');
+    micLabel.textContent = 'MIC ON';
+    micBtnEl.textContent = '🔴 MIC ON';
+  } catch(e) {
+    micLabel.textContent = 'MIC REFUSÉ';
+    console.warn('Mic denied:', e);
+  }
+}
+
+function stopMic() {
+  if (micStream) micStream.getTracks().forEach(t => t.stop());
+  if (audioCtx)  audioCtx.close();
+  audioCtx = null; analyser = null; micStream = null;
+  micActive = false;
+  micDot.classList.remove('active');
+  micLabel.textContent = 'MIC OFF';
+  micBtnEl.textContent = '🎤 MIC OFF';
+}
+
+function toggleMic() {
+  if (micActive) stopMic();
+  else startMic();
+}
+
+// Lire le niveau de basses (bins 0-10 ≈ 0-860Hz avec fftSize=512 @ 44100Hz)
+function getBassLevel() {
+  if (!analyser) return 0;
+  analyser.getByteFrequencyData(dataArray);
+  let sum = 0;
+  const bassEnd = 12; // ~1000Hz
+  for (let i = 0; i < bassEnd; i++) sum += dataArray[i];
+  return (sum / bassEnd) / 255;  // 0-1
+}
+
+// ═══════════════════════════════════════════════════════
+// SIMULATION MODE (si pas de micro)
+// ═══════════════════════════════════════════════════════
+let simBass     = 0;
+let simNextBeat = 0;
+let simBPM      = 128; // BPM simulation (techno)
+
+function getSimBass(t) {
+  // Simule un beat régulier + quelques accents
+  const beatInterval = 60000 / simBPM;
+  if (t > simNextBeat) {
+    simNextBeat = t + beatInterval + (Math.random() - 0.5) * beatInterval * 0.1;
+    simBass = 0.6 + Math.random() * 0.4;
+  }
+  simBass *= 0.88; // decay rapide
+  return simBass;
+}
+
+// ═══════════════════════════════════════════════════════
+// EFFETS VISUELS — Réaction aux basses
+// ═══════════════════════════════════════════════════════
+const nameEl      = document.getElementById('artist-name');
+const flashEl     = document.getElementById('flash-overlay');
+const vignetteEl  = document.getElementById('vignette');
+const nameBar     = document.getElementById('name-bar');
+const bassFill    = document.getElementById('bass-fill');
+
+let lastBass       = 0;
+let flashCooldown  = 0;
+let ringCooldown   = 0;
+let glitchCooldown = 0;
+let isGlitching    = false;
+let logoScale      = 1;
+let nameGlow       = 0;
+
+// Seuil pour déclencher le flash
+const FLASH_THRESHOLD = 0.55;
+const RING_THRESHOLD  = 0.40;
+const GLITCH_THRESHOLD= 0.70;
+
+function applyBassEffects(bass, now) {
+  // ── 1. Barre de bass meter ──────────────────────────
+  bassFill.style.width = (bass * 100).toFixed(1) + '%';
+
+  // ── 2. Glow du nom + espacement des lettres ─────────
+  const glow = bass * 80 * SENSITIVITY;
+  nameGlow   = nameGlow * 0.7 + glow * 0.3;
+  nameEl.style.textShadow = `
+    0 0 ${nameGlow * 0.5}px rgba(255,255,255,0.9),
+    0 0 ${nameGlow}px rgba(255,255,255,0.4),
+    0 0 ${nameGlow * 2}px rgba(255,255,255,0.15)
+  `;
+  const ls = 4 + bass * 18 * SENSITIVITY;
+  nameEl.style.letterSpacing = ls.toFixed(1) + 'px';
+
+  // ── 3. Logo scale ───────────────────────────────────
+  logoScale = 1 + bass * 0.18 * SENSITIVITY;
+  if (logoEl.classList.contains('visible')) {
+    const gv = bass * 50 * SENSITIVITY;
+    logoEl.style.transform = `scale(${logoScale.toFixed(3)})`;
+    logoEl.style.filter    = `drop-shadow(0 0 ${gv}px rgba(255,255,255,0.8))`;
+  }
+
+  // ── 4. Intensité grille ──────────────────────────────
+  gridIntensity = gridIntensity * 0.8 + bass * 0.2;
+
+  // ── 5. Vignette (bords plus sombres sur les basses) ─
+  const vig = 1 - bass * 0.3 * SENSITIVITY;
+  vignetteEl.style.opacity = vig.toFixed(2);
+
+  // ── 6. Flash blanc sur hit fort ─────────────────────
+  if (bass > FLASH_THRESHOLD && now > flashCooldown && bass > lastBass) {
+    const intensity = Math.min((bass - FLASH_THRESHOLD) * 3 * SENSITIVITY, 0.9);
+    flashEl.style.opacity = intensity.toFixed(2);
+    flashCooldown = now + 80 + Math.random() * 60;
+    setTimeout(() => { flashEl.style.opacity = '0'; }, 50);
+  }
+
+  // ── 7. Anneau d'onde ────────────────────────────────
+  if (bass > RING_THRESHOLD && now > ringCooldown && bass > lastBass) {
+    spawnRing(bass);
+    ringCooldown = now + 200;
+    // Burst de particules depuis le centre
+    spawnBurst(canvas.width / 2, canvas.height / 2, Math.floor(bass * 25));
+  }
+
+  // ── 8. Effet glitch sur forte bass ──────────────────
+  if (bass > GLITCH_THRESHOLD && now > glitchCooldown && !isGlitching) {
+    isGlitching    = true;
+    glitchCooldown = now + 800;
+    nameEl.style.animation = 'glitch1 0.3s steps(1) forwards';
+    setTimeout(() => {
+      nameEl.style.animation = '';
+      isGlitching = false;
+    }, 300);
+  }
+
+  // ── 9. Barre nom animée ──────────────────────────────
+  nameBar.style.opacity = (0.3 + bass * 0.7).toFixed(2);
+
+  lastBass = bass;
+}
+
+// ═══════════════════════════════════════════════════════
+// BOUCLE PRINCIPALE
+// ═══════════════════════════════════════════════════════
+function mainLoop(t) {
+  // Lire le niveau de bass
+  const rawBass = micActive ? getBassLevel() : getSimBass(t);
+  // Appliquer la sensibilité
+  const bass = Math.min(rawBass * (0.5 + SENSITIVITY * 1.5), 1);
+
+  // ── Effacer le canvas ──────────────────────────────
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // ── Dessiner la grille ─────────────────────────────
+  drawGrid();
+
+  // ── Mettre à jour et dessiner les particules ───────
+  // Ajouter des particules de fond en permanence
+  if (Math.random() < 0.4 + bass * 1.5) {
+    particles.push(new Particle());
+  }
+  particles = particles.filter(p => {
+    const alive = p.update();
+    if (alive) p.draw();
+    return alive;
+  });
+
+  // ── Rings ─────────────────────────────────────────
+  drawRings();
+
+  // ── Effets basses ─────────────────────────────────
+  applyBassEffects(bass, t);
+
+  requestAnimationFrame(mainLoop);
+}
+
+// ═══════════════════════════════════════════════════════
+// FULLSCREEN
+// ═══════════════════════════════════════════════════════
+function toggleFullscreen() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    (document.documentElement.requestFullscreen
+      || document.documentElement.webkitRequestFullscreen
+    ).call(document.documentElement);
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  }
+}
+
+// Double-clic pour fullscreen
+document.addEventListener('dblclick', toggleFullscreen);
+
+// ═══════════════════════════════════════════════════════
+// DÉMARRAGE
+// ═══════════════════════════════════════════════════════
+// Démarrer le micro automatiquement (demande permission)
+startMic();
+
+// Lancer la boucle
+requestAnimationFrame(mainLoop);
+</script>
+</body>
+</html>
