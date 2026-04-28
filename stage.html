@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heatwave Stage — Configuration</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;600;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #020202;
+  --deep:  #090909;
+  --white: #f0f0f0;
+  --grey:  #555;
+  --light: #aaa;
+  --border: rgba(255,255,255,0.1);
+  --glow: 0 0 30px rgba(255,255,255,0.15);
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100%; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Grain + scanlines ── */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:100; opacity:.5;
+}
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);
+  pointer-events:none; z-index:101;
+}
+
+/* ── Fond animé grille ── */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridDrift 20s linear infinite;
+}
+@keyframes gridDrift {
+  from { background-position: 0 0; }
+  to   { background-position: 60px 60px; }
+}
+
+/* ── Wrapper ── */
+.wrapper {
+  position: relative; z-index: 10;
+  width: 100%; max-width: 680px;
+  padding: 48px 24px;
+}
+
+/* ── Header ── */
+.site-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.site-header .skull {
+  font-size: 2.2rem;
+  display: block;
+  margin-bottom: 12px;
+  opacity: .5;
+  animation: skullPulse 3s ease-in-out infinite;
+}
+@keyframes skullPulse {
+  0%,100% { opacity:.35; transform:scale(1); }
+  50%      { opacity:.65; transform:scale(1.06); }
+}
+.site-header h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.2rem, 8vw, 3.8rem);
+  letter-spacing: 4px;
+  line-height: 1;
+  color: var(--white);
+}
+.site-header h1 span {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,.5);
+}
+.site-header p {
+  font-family: 'Oswald', sans-serif;
+  font-size: .75rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--grey);
+  margin-top: 10px;
+}
+
+/* ── Card form ── */
+.config-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  position: relative;
+  padding: 40px;
+}
+.config-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+}
+
+/* ── Form groups ── */
+.form-group { margin-bottom: 28px; }
+.form-group label {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-size: .7rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+  margin-bottom: 8px;
+}
+.form-group label .opt {
+  font-size: .6rem;
+  letter-spacing: 2px;
+  color: var(--grey);
+  margin-left: 8px;
+}
+.form-group input[type="text"],
+.form-group input[type="url"] {
+  width: 100%;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  color: var(--white);
+  padding: 14px 16px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.05rem;
+  outline: none;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+.form-group input:focus {
+  border-color: rgba(255,255,255,.4);
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 0 20px rgba(255,255,255,.06);
+}
+.form-group input::placeholder { color: var(--grey); }
+
+/* ── Upload logo ── */
+.logo-upload-zone {
+  border: 1px dashed rgba(255,255,255,.18);
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+  overflow: hidden;
+}
+.logo-upload-zone:hover {
+  border-color: rgba(255,255,255,.4);
+  background: rgba(255,255,255,.03);
+}
+.logo-upload-zone input[type="file"] {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-icon { font-size: 2rem; opacity: .3; display: block; margin-bottom: 8px; }
+.upload-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: .75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.logo-preview-wrap {
+  display: none;
+  margin-top: 16px;
+  text-align: center;
+}
+#logo-preview {
+  max-height: 100px;
+  max-width: 240px;
+  object-fit: contain;
+  opacity: .85;
+  border: 1px solid var(--border);
+}
+.remove-logo {
+  display: block;
+  margin-top: 8px;
+  font-size: .65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--grey);
+  cursor: pointer;
+  background: none; border: none; font-family: 'Oswald', sans-serif;
+  transition: color .2s;
+}
+.remove-logo:hover { color: var(--white); }
+
+/* ── Sensitivity ── */
+.sens-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.sens-row input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 3px;
+  background: rgba(255,255,255,.15);
+  outline: none;
+  cursor: pointer;
+}
+.sens-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 0 10px rgba(255,255,255,.5);
+  cursor: pointer;
+}
+.sens-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  color: var(--white);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── Divider ── */
+.divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
+  margin: 32px 0;
+}
+
+/* ── Launch button ── */
+.launch-btn {
+  width: 100%;
+  background: var(--white);
+  color: var(--black);
+  border: none;
+  padding: 20px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  box-shadow: 0 0 30px rgba(255,255,255,.15);
+  transition: box-shadow .3s, transform .15s;
+  position: relative;
+  overflow: hidden;
+}
+.launch-btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,.15) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform .4s;
+}
+.launch-btn:hover { box-shadow: 0 0 60px rgba(255,255,255,.4); transform: translateY(-1px); }
+.launch-btn:hover::after { transform: translateX(100%); }
+.launch-btn:active { transform: scale(.98); }
+
+/* ── Erreur ── */
+.error-msg {
+  display: none;
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.2);
+  font-family: 'Oswald', sans-serif;
+  font-size: .8rem;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,.6);
+  text-align: center;
+}
+
+/* ── Footer note ── */
+.footer-note {
+  text-align: center;
+  margin-top: 24px;
+  font-size: .65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--grey);
+  font-family: 'Oswald', sans-serif;
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<div class="wrapper">
+  <header class="site-header">
+    <span class="skull">☠</span>
+    <h1>HEATWAVE <span>STAGE</span></h1>
+    <p>Configuration écran scène</p>
+  </header>
+
+  <div class="config-card">
+
+    <!-- Nom artiste -->
+    <div class="form-group">
+      <label>Nom de l'Artiste</label>
+      <input type="text" id="artist-name" placeholder="DJ HELLMET" maxlength="40" autocomplete="off">
+    </div>
+
+    <!-- Logo -->
+    <div class="form-group">
+      <label>Logo Artiste <span class="opt">— Optionnel</span></label>
+      <div class="logo-upload-zone" id="upload-zone">
+        <input type="file" id="logo-file" accept="image/*,image/gif">
+        <span class="upload-icon">🖼</span>
+        <span class="upload-text">Glisse ou clique — PNG, JPG, GIF, SVG</span>
+      </div>
+      <div class="logo-preview-wrap" id="logo-preview-wrap">
+        <img id="logo-preview" src="" alt="Logo">
+        <button class="remove-logo" onclick="removeLogo()">✕ Retirer le logo</button>
+      </div>
+    </div>
+
+    <!-- URL Vidéo / Live -->
+    <div class="form-group">
+      <label>URL YouTube / Twitch <span class="opt">— Optionnel</span></label>
+      <input type="url" id="video-url"
+        placeholder="https://www.youtube.com/watch?v=... ou https://twitch.tv/..."
+        autocomplete="off">
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Sensibilité basses -->
+    <div class="form-group">
+      <label>Sensibilité Basses (Micro)</label>
+      <div class="sens-row">
+        <input type="range" id="sensitivity" min="1" max="10" value="6"
+          oninput="document.getElementById('sens-val').textContent=this.value">
+        <span class="sens-val" id="sens-val">6</span>
+      </div>
+    </div>
+
+    <!-- Bouton lancer -->
+    <button class="launch-btn" onclick="launchScreen()">
+      ▶ &nbsp; LANCER L'ÉCRAN SCÈNE
+    </button>
+    <div class="error-msg" id="error-msg"></div>
+
+  </div>
+
+  <p class="footer-note">☠ &nbsp; Liège City Heatwave &nbsp; — &nbsp; Stage Visual System &nbsp; ☠</p>
+</div>
+
+<script>
+// ── Logo upload / preview ────────────────────────────────────────
+const logoFile    = document.getElementById('logo-file');
+const logoPreview = document.getElementById('logo-preview');
+const previewWrap = document.getElementById('logo-preview-wrap');
+const uploadZone  = document.getElementById('upload-zone');
+let logoDataURL   = null;
+
+logoFile.addEventListener('change', () => {
+  const file = logoFile.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    logoDataURL = e.target.result;
+    logoPreview.src = logoDataURL;
+    previewWrap.style.display = 'block';
+    uploadZone.style.opacity = '0.5';
+  };
+  reader.readAsDataURL(file);
+});
+
+function removeLogo() {
+  logoDataURL = null;
+  logoFile.value = '';
+  logoPreview.src = '';
+  previewWrap.style.display = 'none';
+  uploadZone.style.opacity = '1';
+}
+
+// ── Parse URL vidéo ─────────────────────────────────────────────
+function parseVideoURL(url) {
+  if (!url) return null;
+  url = url.trim();
+
+  // YouTube watch
+  let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (m) return { type: 'youtube', id: m[1] };
+
+  // YouTube live
+  m = url.match(/youtube\.com\/live\/([a-zA-Z0-9_-]{11})/);
+  if (m) return { type: 'youtube', id: m[1] };
+
+  // Twitch
+  m = url.match(/twitch\.tv\/([a-zA-Z0-9_]{1,25})/);
+  if (m) return { type: 'twitch', channel: m[1] };
+
+  return null;
+}
+
+// ── Lancer l'écran ──────────────────────────────────────────────
+function launchScreen() {
+  const name = document.getElementById('artist-name').value.trim();
+  const videoURL = document.getElementById('video-url').value.trim();
+  const sensitivity = parseInt(document.getElementById('sensitivity').value);
+  const errEl = document.getElementById('error-msg');
+
+  if (!name) {
+    errEl.textContent = '⚠ Entre le nom de l\'artiste.';
+    errEl.style.display = 'block';
+    document.getElementById('artist-name').focus();
+    return;
+  }
+
+  errEl.style.display = 'none';
+
+  const videoInfo = parseVideoURL(videoURL);
+
+  // Stocker la config
+  const config = {
+    artistName:  name,
+    logo:        logoDataURL,
+    videoInfo:   videoInfo,
+    sensitivity: sensitivity,
+  };
+
+  localStorage.setItem('hw_stage_config', JSON.stringify(config));
+
+  // Ouvrir screen.html
+  window.open('screen.html', '_blank');
+}
+
+// ── Entrée clavier sur les champs ───────────────────────────────
+document.querySelectorAll('input[type="text"], input[type="url"]')
+  .forEach(el => el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') launchScreen();
+  }));
+</script>
+</body>
+</html>
