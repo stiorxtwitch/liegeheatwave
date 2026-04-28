@@ -50,30 +50,159 @@ body::before {
 ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
 
 /* ===== MUSIC PLAYER ===== */
-#music-btn {
+#music-player {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
+  bottom: 28px;
+  right: 28px;
   z-index: 999;
-  width: 56px;
-  height: 56px;
+  background: rgba(6, 6, 6, 0.96);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-top: 2px solid var(--red);
+  padding: 14px 16px 14px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.85), var(--glow-red);
+  transition: box-shadow 0.3s, transform 0.2s;
+  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+  min-width: 230px;
+  user-select: none;
+}
+#music-player:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,0.9), 0 0 50px rgba(204,26,26,0.4);
+}
+
+/* ── Égaliseur animé ── */
+.mp-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.mp-bars span {
+  display: block;
+  width: 3px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(to top, var(--red), var(--orange));
+  height: 4px;
+  transition: height 0.15s;
+}
+/* Barres animées uniquement quand .playing */
+.mp-bars.playing span:nth-child(1) { animation: eq1 0.55s ease-in-out infinite alternate; }
+.mp-bars.playing span:nth-child(2) { animation: eq2 0.45s ease-in-out infinite alternate 0.10s; }
+.mp-bars.playing span:nth-child(3) { animation: eq3 0.70s ease-in-out infinite alternate 0.05s; }
+.mp-bars.playing span:nth-child(4) { animation: eq4 0.38s ease-in-out infinite alternate 0.22s; }
+.mp-bars.playing span:nth-child(5) { animation: eq5 0.60s ease-in-out infinite alternate 0.15s; }
+@keyframes eq1 { from{height:3px}  to{height:18px} }
+@keyframes eq2 { from{height:7px}  to{height:22px} }
+@keyframes eq3 { from{height:3px}  to{height:14px} }
+@keyframes eq4 { from{height:9px}  to{height:24px} }
+@keyframes eq5 { from{height:5px}  to{height:16px} }
+
+/* ── Infos piste ── */
+.mp-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mp-label {
+  font-size: 0.52rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red);
+  font-family: 'Oswald', sans-serif;
+}
+.mp-title-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.88rem;
+  letter-spacing: 2px;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mp-hint {
+  font-size: 0.54rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--grey);
+  font-family: 'Oswald', sans-serif;
+  animation: blink-hint 1.4s ease-in-out infinite;
+  margin-top: 1px;
+}
+.mp-hint.hidden { display: none; }
+@keyframes blink-hint { 0%,100%{opacity:0.35} 50%{opacity:1} }
+
+/* ── Slider volume ── */
+.mp-vol-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+.mp-vol-icon {
+  font-size: 0.72rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.mp-vol-icon:hover { transform: scale(1.2); }
+#mp-volume {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 78px;
+  height: 3px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+#mp-volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   background: var(--red);
-  border: 2px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(204,26,26,0.8);
+  transition: transform 0.15s, background 0.15s;
+}
+#mp-volume::-webkit-slider-thumb:hover { transform: scale(1.35); background: var(--orange); }
+#mp-volume::-moz-range-thumb {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none; cursor: pointer;
+}
+
+/* ── Bouton play/pause ── */
+#mp-toggle {
+  background: var(--red);
+  border: none;
   color: white;
-  font-size: 22px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 15px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--glow-red), 0 4px 20px rgba(0,0,0,0.6);
-  transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+  box-shadow: 0 0 14px rgba(204,26,26,0.6);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
   animation: pulse-btn 2s infinite;
 }
-#music-btn:hover { transform: scale(1.1); box-shadow: 0 0 50px rgba(204,26,26,0.7), 0 4px 20px rgba(0,0,0,0.6); }
+#mp-toggle:hover { background: var(--orange); transform: scale(1.12); box-shadow: 0 0 24px rgba(232,93,4,0.7); }
 @keyframes pulse-btn {
-  0%,100% { box-shadow: var(--glow-red), 0 4px 20px rgba(0,0,0,0.6); }
-  50% { box-shadow: 0 0 50px rgba(204,26,26,0.6), 0 4px 20px rgba(0,0,0,0.6); }
+  0%,100% { box-shadow: 0 0 14px rgba(204,26,26,0.5); }
+  50%      { box-shadow: 0 0 28px rgba(204,26,26,0.9); }
 }
 
 /* ===== NAVBAR ===== */
@@ -691,20 +820,34 @@ footer .foot-copy {
 <!--
   ╔══════════════════════════════════════════════════════════════╗
   ║  🎵 MUSIQUE — REMPLACE L'URL CI-DESSOUS PAR TON LIEN RAW    ║
-  ║                                                              ║
-  ║  Format GitHub Raw :                                         ║
-  ║  https://raw.githubusercontent.com/TON_USER/TON_REPO/main/musique.mp3
-  ║                                                              ║
-  ║  Exemple :                                                   ║
-  ║  https://raw.githubusercontent.com/JohnDoe/heatwave/main/musique.mp3
+  ║  Format : https://raw.githubusercontent.com/USER/REPO/main/musique.mp3
   ╚══════════════════════════════════════════════════════════════╝
 -->
-<audio id="bg-music" loop preload="none">
+<audio id="bg-music" preload="auto">
   <source src="https://www.image2url.com/r2/default/audio/1777372040277-b11ba6df-0fa7-45e3-9ae6-dfeab77549bf.mp3" type="audio/mpeg">
 </audio>
 
-<!-- FLOATING MUSIC BUTTON -->
-<button id="music-btn" title="Musique d'ambiance" onclick="toggleMusic()">🔊</button>
+<!-- ===== MUSIC PLAYER FLOTTANT ===== -->
+<div id="music-player">
+  <!-- Égaliseur animé -->
+  <div class="mp-bars" id="mp-bars">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- Infos + volume -->
+  <div class="mp-info">
+    <span class="mp-label">🔥 En direct</span>
+    <span class="mp-title-text">HEATWAVE AMBIANCE</span>
+    <span class="mp-hint" id="mp-hint">Scroll ou clic pour lancer</span>
+    <div class="mp-vol-row">
+      <span class="mp-vol-icon" id="mp-vol-icon" title="Couper / Rétablir" onclick="muteToggle()">🔊</span>
+      <input type="range" id="mp-volume" min="0" max="100" value="50" title="Volume">
+    </div>
+  </div>
+
+  <!-- Play / Pause -->
+  <button id="mp-toggle" onclick="toggleMusic()" title="Play / Pause">▶</button>
+</div>
 
 <!-- MODAL : Déjà enregistré -->
 <div class="modal-overlay" id="alreadyModal">
@@ -971,67 +1114,165 @@ footer .foot-copy {
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1496907610761330759/vRda1s09EgCsDOCburn4y1az3PlPlHvgkJEaO1yWpQ-OQGHYQOh1GafAJI5_KuCw1Rb7";
 
 // ──────────────────────────────────────────────
-// 🎵 MUSIQUE — HTML5 Audio (remplace YouTube)
+// 🎵 MUSIQUE — Autoplay + Fade In/Out + Volume + Boucle fluide
 // ──────────────────────────────────────────────
-const audio = document.getElementById('bg-music');
-const musicBtn = document.getElementById('music-btn');
-let musicStarted = false;
-let musicPlaying = false;
+const audio     = document.getElementById('bg-music');
+const mpToggle  = document.getElementById('mp-toggle');
+const mpBars    = document.getElementById('mp-bars');
+const mpVolume  = document.getElementById('mp-volume');
+const mpVolIcon = document.getElementById('mp-vol-icon');
+const mpHint    = document.getElementById('mp-hint');
 
-// Volume d'ambiance (pas trop fort)
-audio.volume = 0.45;
+let musicStarted = false;    // true dès la 1ère lecture réussie
+let musicPlaying = false;    // true si son audible en cours
+let userVolume   = 0.50;     // volume cible 0–1
+let lastVolume   = 0.50;     // mémorisé pour mute/unmute
+let fadeTimer    = null;     // intervalle de fade actif
+let isFadingOut  = false;    // verrou pour éviter double fade
 
-/**
- * Lance la musique UNE SEULE FOIS sur la première interaction utilisateur.
- * Les navigateurs modernes bloquent l'autoplay sans geste utilisateur —
- * cette approche est la seule qui fonctionne de façon fiable.
- */
-function startMusicOnce() {
-  if (musicStarted) return;
+const FADE_MS          = 1800;   // durée fade en ms
+const FADE_OUT_TRIGGER = 3.5;    // secondes avant fin pour déclencher fade out
+const FADE_STEPS       = 45;
+
+// Démarrer silencieux
+audio.volume = 0;
+
+/* ── Slider volume ──────────────────────────────── */
+mpVolume.addEventListener('input', () => {
+  userVolume = mpVolume.value / 100;
+  lastVolume = userVolume;
+  if (musicPlaying && !isFadingOut) audio.volume = userVolume;
+  updateVolIcon();
+});
+
+function updateVolIcon() {
+  if (userVolume === 0)       mpVolIcon.textContent = '🔇';
+  else if (userVolume < 0.35) mpVolIcon.textContent = '🔉';
+  else                        mpVolIcon.textContent = '🔊';
+}
+
+/* ── Mute / Unmute (clic icône) ─────────────────── */
+function muteToggle() {
+  if (userVolume > 0) {
+    lastVolume = userVolume;
+    userVolume = 0;
+    mpVolume.value = 0;
+    if (musicPlaying) audio.volume = 0;
+  } else {
+    userVolume = lastVolume || 0.5;
+    mpVolume.value = Math.round(userVolume * 100);
+    if (musicPlaying) audio.volume = userVolume;
+  }
+  updateVolIcon();
+}
+
+/* ── Fade IN ────────────────────────────────────── */
+function fadeIn(onDone) {
+  clearInterval(fadeTimer);
+  isFadingOut = false;
+  audio.volume = 0;
+  const interval = FADE_MS / FADE_STEPS;
+  const stepVol  = userVolume / FADE_STEPS;
+  let count = 0;
+  fadeTimer = setInterval(() => {
+    count++;
+    audio.volume = Math.min(userVolume, parseFloat((stepVol * count).toFixed(4)));
+    if (count >= FADE_STEPS) {
+      audio.volume = userVolume;
+      clearInterval(fadeTimer);
+      if (onDone) onDone();
+    }
+  }, interval);
+}
+
+/* ── Fade OUT ───────────────────────────────────── */
+function fadeOut(onDone) {
+  clearInterval(fadeTimer);
+  isFadingOut = true;
+  const startVol = audio.volume;
+  const interval = FADE_MS / FADE_STEPS;
+  const stepVol  = startVol / FADE_STEPS;
+  let count = 0;
+  fadeTimer = setInterval(() => {
+    count++;
+    audio.volume = Math.max(0, parseFloat((startVol - stepVol * count).toFixed(4)));
+    if (count >= FADE_STEPS) {
+      audio.volume = 0;
+      clearInterval(fadeTimer);
+      isFadingOut = false;
+      if (onDone) onDone();
+    }
+  }, interval);
+}
+
+/* ── Boucle fluide : fade out avant la fin → repart avec fade in ── */
+audio.addEventListener('timeupdate', () => {
+  if (!musicPlaying || isFadingOut || !audio.duration) return;
+  const timeLeft = audio.duration - audio.currentTime;
+  if (timeLeft > 0 && timeLeft <= FADE_OUT_TRIGGER) {
+    fadeOut(() => {
+      audio.currentTime = 0;
+      audio.play().then(() => fadeIn());
+    });
+  }
+});
+
+// Sécurité si 'ended' se déclenche avant le fade (piste très courte)
+audio.addEventListener('ended', () => {
+  if (!musicPlaying) return;
+  audio.currentTime = 0;
+  audio.play().then(() => fadeIn());
+});
+
+/* ── Démarrer la musique ────────────────────────── */
+function startMusic() {
+  if (musicStarted && musicPlaying) return;
   musicStarted = true;
 
   audio.play()
     .then(() => {
       musicPlaying = true;
-      musicBtn.textContent = '🔇';
+      mpToggle.textContent = '⏸';
+      mpBars.classList.add('playing');
+      mpHint.classList.add('hidden');
+      fadeIn();
     })
     .catch(() => {
-      // Autoplay bloqué malgré l'interaction — l'utilisateur devra cliquer manuellement
+      // Autoplay bloqué → retry au prochain geste
       musicStarted = false;
     });
+}
 
-  // Nettoyer les listeners après la première interaction réussie
-  ['click', 'scroll', 'touchstart', 'keydown'].forEach(evt => {
-    document.removeEventListener(evt, startMusicOnce);
+/* ── Stopper avec fade out ──────────────────────── */
+function stopMusic() {
+  fadeOut(() => {
+    audio.pause();
+    musicPlaying = false;
+    mpToggle.textContent = '▶';
+    mpBars.classList.remove('playing');
   });
 }
 
-// Écouter la première interaction sur la page
-['click', 'scroll', 'touchstart', 'keydown'].forEach(evt => {
-  document.addEventListener(evt, startMusicOnce, { passive: true });
-});
-
-/**
- * Bouton flottant : toggle play/pause
- */
+/* ── Toggle bouton play/pause ───────────────────── */
 function toggleMusic() {
-  if (!musicStarted) {
-    // Premier clic sur le bouton = lancer
-    startMusicOnce();
-    return;
-  }
-
-  if (musicPlaying) {
-    audio.pause();
-    musicPlaying = false;
-    musicBtn.textContent = '🔊';
-  } else {
-    audio.play().then(() => {
-      musicPlaying = true;
-      musicBtn.textContent = '🔇';
-    });
-  }
+  if (!musicStarted || !musicPlaying) startMusic();
+  else stopMusic();
 }
+
+/* ── Autoplay sur TOUT geste (scroll, clic, touch, clavier, souris, wheel) ── */
+const INTERACTION_EVENTS = [
+  'click', 'scroll', 'touchstart', 'touchmove',
+  'keydown', 'mousemove', 'pointerdown', 'wheel'
+];
+
+function onFirstInteraction() {
+  if (musicStarted) return;
+  startMusic();
+}
+
+INTERACTION_EVENTS.forEach(evt => {
+  document.addEventListener(evt, onFirstInteraction, { passive: true });
+});
 
 // ──────────────────────────────────────────────
 // 📸 PREVIEW PHOTO
